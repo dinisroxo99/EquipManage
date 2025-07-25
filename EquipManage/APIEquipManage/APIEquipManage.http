@@ -1,0 +1,6 @@
+@APIEquipManage_HostAddress = http://localhost:5242
+
+GET {{APIEquipManage_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
