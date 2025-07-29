@@ -21,8 +21,8 @@ public class EquipmentController : ControllerBase
     {
         try
         {
-            var equipments = await _equipManageContext.Equipment.ToListAsync();
-            if (equipments.IsNullOrEmpty())
+            var equipments = await _equipManageContext.Equipment.AsNoTracking().ToListAsync();
+            if (equipments.Count == 0)
             {
                 return NoContent();
             }
@@ -39,7 +39,7 @@ public class EquipmentController : ControllerBase
     [HttpGet("{name}")]
     public async Task<IActionResult> GetEquiomentByName(string name)
     {
-        var equipment = await _equipManageContext.Equipment.FirstOrDefaultAsync(x => x.Name == name);
+        var equipment = await _equipManageContext.Equipment.AsNoTracking().FirstOrDefaultAsync(x => x.Name == name);
         if (equipment == null)
         {
             return NotFound();
@@ -69,7 +69,7 @@ public class EquipmentController : ControllerBase
         }
         var canceledReservations = new List<Reservation>(); 
         var reservation = await _equipManageContext.Reservation.Where(r => r.IdEquipment == id).ToListAsync();
-        if (reservation.Any())
+        if (reservation.Count > 0)
         {
             foreach (var r in reservation)
             {
