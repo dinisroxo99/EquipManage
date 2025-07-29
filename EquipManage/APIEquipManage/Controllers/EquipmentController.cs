@@ -4,6 +4,8 @@ using APIEquipManage.Data;
 using APIEquipManage.Models;
 using System;
 using Microsoft.IdentityModel.Tokens;
+using APIEquipManage.Extensions;
+using APIEquipManage.DTOS;
 
 [ApiController]
 [Route("api/equioment")]
@@ -21,7 +23,7 @@ public class EquipmentController : ControllerBase
     {
         try
         {
-            var equipments = await _equipManageContext.Equipment.AsNoTracking().ToListAsync();
+            var equipments = await _equipManageContext.Equipment.IncludeAll().AsNoTracking().ToListAsync();
             if (equipments.Count == 0)
             {
                 return NoContent();
@@ -39,24 +41,57 @@ public class EquipmentController : ControllerBase
     [HttpGet("{name}")]
     public async Task<IActionResult> GetEquiomentByName(string name)
     {
-        var equipment = await _equipManageContext.Equipment.AsNoTracking().FirstOrDefaultAsync(x => x.Name == name);
-        if (equipment == null)
+        try
         {
-            return NotFound();
+            var equipment = await _equipManageContext.Equipment.IncludeAll().AsNoTracking().FirstOrDefaultAsync(x => x.Name == name);
+            if (equipment == null)
+            {
+                return NotFound();
+            }
+            return Ok(equipment);
         }
-        return Ok(equipment);
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    [HttpGet("/avaliable")]
+    public async Task<IActionResult> GetEquipmentAvaliable()
+    {
+        try
+        {
+            var equipments = await _equipManageContext.Equipment.IncludeAll()
+                                                                .AsNoTracking()
+                                                                .Where(x => x.Status.StatusOpt.Name == "avaliable")
+                                                                .ToListAsync();
+
+            if (equipments.Count == 0) { return NoContent(); }
+            return Ok(equipments);
+        }
+        catch (Exception e)
+        {
+
+            return BadRequest(e.Message);
+        }
     }
     [HttpPost]
     public async Task<IActionResult> NewEquipment([FromBody] Equipment equipment)
     {
-        if (string.IsNullOrEmpty(equipment.Name))
+        try
         {
-            equipment.Name = Guid.NewGuid().ToString();
+            if (string.IsNullOrEmpty(equipment.Name))
+            {
+                equipment.Name = Guid.NewGuid().ToString();
+            }
+            equipment.CreatedAt = DateTime.UtcNow;
+            _equipManageContext.Equipment.Add(equipment);
+            await _equipManageContext.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetEquipment), new { name = equipment.Name }, equipment);
         }
-        equipment.CreatedAt = DateTime.UtcNow;
-        _equipManageContext.Equipment.Add(equipment);
-        await _equipManageContext.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetEquipment), new {name = equipment.Name}, equipment);
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpDelete("{id}")]
@@ -85,10 +120,35 @@ public class EquipmentController : ControllerBase
         {
             return BadRequest(new { message = "Can't find the option to Delete" });
         }
-        equipment.IdStatus = deletedStatus.Id;
+        equipment.Status.Id = deletedStatus.Id;
         await _equipManageContext.SaveChangesAsync();
-        return Ok();
-    }  
+        return Ok(canceledReservations);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateEquipment(int id, [FromBody] EquipmentDTO updateFields)
+    {
+        try
+        {
+            var equipment = await _equipManageContext.Equipment.FindAsync(id);
+            if (equipment == null)
+                return NotFound();
+            
+            equipment.StatusId = updateFields.StatusId;
+            equipment.CategoryId = updateFields.CategoryId;
+            equipment.Name = updateFields.Name;
+            equipment.Model = updateFields.Model;
+            equipment.Description = updateFields.Description;
+
+            await _equipManageContext.SaveChangesAsync();
+
+            return Ok(equipment);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
           
 }
 
