@@ -4,8 +4,10 @@ namespace APIEquipManage.Models
 {
     public class Image
     {
-        public int Id { get; set; }
-        public int IdEquipment { get; set; }
-        public string Path { get; set; }
+        public required int Id { get; set; }
+        public required int IdEquipment { get; set; }
+        public required string Path { get; set; }
+
+        public required Equipment Equipment { get; set; }
     }
 }
