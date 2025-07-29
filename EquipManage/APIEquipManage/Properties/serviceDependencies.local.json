@@ -4,7 +4,7 @@
       "type": "secrets.user",
       "dynamicId": null
     },
-    "mssql2": {
+    "mssql1": {
       "secretStore": "LocalSecretsFile",
       "type": "mssql.local",
       "connectionId": "ConnectionStrings:DefaultConnection",

@@ -4,7 +4,7 @@
       "type": "secrets",
       "dynamicId": null
     },
-    "mssql2": {
+    "mssql1": {
       "type": "mssql",
       "connectionId": "ConnectionStrings:DefaultConnection",
       "dynamicId": null
