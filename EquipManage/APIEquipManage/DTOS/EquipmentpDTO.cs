@@ -1,6 +1,6 @@
 ﻿namespace APIEquipManage.DTOS
 {
-    public class EquipmentDTO
+    public class UpdateEquipmentDTO
     {
         public required string Name { get; set; }
         public required string Model { get; set; }

@@ -126,7 +126,7 @@ public class EquipmentController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateEquipment(int id, [FromBody] EquipmentDTO updateFields)
+    public async Task<IActionResult> UpdateEquipment(int id, [FromBody] UpdateEquipmentDTO updateFields)
     {
         try
         {

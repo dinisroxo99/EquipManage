@@ -12,5 +12,10 @@ namespace APIEquipManage.Extensions
                 .Include(e => e.Status)
                 .Include(e => e.Images);
         }
+
+        public static IQueryable<Equipment> IncludeImg(this IQueryable<Equipment> query)
+        {
+            return query.Include(e => e.Images);
+        }
     }
 }
