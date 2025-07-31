@@ -47,6 +47,8 @@ public class CategoryController : ControllerBase
         try
         {
             var category = await _equipManageContext.Category.FindAsync(id);
+            if (category == null) { return NotFound(); }
+            if (subCategory.SubCategory.Count < 1){ return NoContent(); }
             var ListSubCategorys = new List<Category>();
             foreach (var item in subCategory.SubCategory)
             {
@@ -54,10 +56,6 @@ public class CategoryController : ControllerBase
                 await _equipManageContext.AddAsync(newSubCategory);
                 ListSubCategorys.Add(newSubCategory);
                 
-            }
-            if (subCategory.SubCategory.Count < 1)
-            {
-                return NoContent();
             }
             await _equipManageContext.SaveChangesAsync();
             return Ok(ListSubCategorys);
