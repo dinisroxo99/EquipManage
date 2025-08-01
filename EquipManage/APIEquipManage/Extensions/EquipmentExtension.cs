@@ -9,7 +9,7 @@ namespace APIEquipManage.Extensions
         {
             return query
                 .Include(e => e.Category)
-                .Include(e => e.Status)
+                .Include(e => e.StatusOpt)
                 .Include(e => e.Images);
         }
 

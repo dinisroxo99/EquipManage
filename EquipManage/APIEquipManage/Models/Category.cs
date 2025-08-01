@@ -8,6 +8,7 @@ namespace APIEquipManage.Models
         public int? IdParent { get; set; }
         public required string Name { get; set; }
 
+        [ForeignKey("IdParent")]
         public Category? Parent { get; set; }
     }
 }

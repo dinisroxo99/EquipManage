@@ -37,7 +37,7 @@ public class CategoryController : ControllerBase
         catch (Exception e)
         {
 
-            return BadRequest(e.Message);
+            return BadRequest(e);
         }
     }
 
@@ -63,7 +63,7 @@ public class CategoryController : ControllerBase
         catch (Exception e)
         {
 
-            return BadRequest(e.Message);
+            return BadRequest(e);
         }
     }
     [HttpPost]
@@ -78,7 +78,7 @@ public class CategoryController : ControllerBase
             var ListCategorys = new List<Category>();
             foreach (var name in category.Category)
             {
-                var newCategory = new Category { Name = name.ToString() };
+                var newCategory = new Category { Name = name , IdParent = null};
                 ListCategorys.Add(newCategory);
                 await _equipManageContext.Category.AddAsync(newCategory);
             }
@@ -99,9 +99,9 @@ public class CategoryController : ControllerBase
         try
         {
             var category = await _equipManageContext.Category.FindAsync(id);
-            if (category == null) { return NotFound(); }
-            var equipmentdependence = await _equipManageContext.Equipment.Where(x => x.CategoryId == id).ToListAsync();
-            var categorydependence = await _equipManageContext.Category.Where(x => x.IdParent == id).ToListAsync();
+            if (category == null) { return Forbid(); }
+            var equipmentdependence = await _equipManageContext.Equipment.Where(x => x.IdCategory == id).ToListAsync();
+            var categorydependence = await _equipManageContext.Category.Where(x => x.IdParent == category.Id).ToListAsync();
             if (equipmentdependence.Count > 0 || categorydependence.Count > 0)
             {
                 return Conflict(new CategoryConflictDTO

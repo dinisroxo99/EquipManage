@@ -1,6 +1,7 @@
 ﻿
 using APIEquipManage.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Net.NetworkInformation;
 
 namespace APIEquipManage.Models
@@ -12,12 +13,13 @@ namespace APIEquipManage.Models
         public required string Model { get; set; }
         public string? Description {  get; set; }
         public required DateTime CreatedAt { get; set; }
-        public required int StatusId { get; set; }
-        public required int CategoryId { get; set; }
+        public required int IdStatus { get; set; }
+        public required int IdCategory { get; set; }
 
 
-        
+        [ForeignKey("IdStatus")]
         public StatusOpt? StatusOpt { get; set; }
+        [ForeignKey("IdCategory")]
         public  Category? Category { get; set; }
         public List<Image>? Images { get; set; }
 

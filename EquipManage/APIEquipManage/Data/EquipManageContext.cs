@@ -11,7 +11,6 @@ namespace APIEquipManage.Data
         public DbSet<Equipment> Equipment { get; set; }
         public DbSet<Image> Image { get; set; }
         public DbSet<Reservation> Reservation { get; set; }
-        public DbSet<Status> Status { get; set; }
         public DbSet<StatusOpt> StatusOpt { get; set; }   
 
     }

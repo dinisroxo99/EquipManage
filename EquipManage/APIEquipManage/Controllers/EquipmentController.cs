@@ -62,7 +62,7 @@ public class EquipmentController : ControllerBase
         {
             var equipments = await _equipManageContext.Equipment.IncludeAll()
                                                                 .AsNoTracking()
-                                                                .Where(x => x.Status.StatusOpt.Name == "avaliable")
+                                                                .Where(x => x.StatusOpt.Name == "avaliable")
                                                                 .ToListAsync();
 
             if (equipments.Count == 0) { return NoContent(); }
@@ -124,7 +124,7 @@ public class EquipmentController : ControllerBase
         {
             return BadRequest(new { message = "Can't find the option to Delete" });
         }
-        equipment.StatusId = deletedStatus.Id;
+        equipment.IdStatus = deletedStatus.Id;
         await _equipManageContext.SaveChangesAsync();
         return Ok(canceledReservations);
     }
@@ -138,8 +138,8 @@ public class EquipmentController : ControllerBase
             if (equipment == null)
                 return NotFound();
             
-            equipment.StatusId = updateFields.StatusId;
-            equipment.CategoryId = updateFields.CategoryId;
+            equipment.IdStatus = updateFields.StatusId;
+            equipment.IdCategory = updateFields.CategoryId;
             equipment.Name = updateFields.Name;
             equipment.Model = updateFields.Model;
             equipment.Description = updateFields.Description;

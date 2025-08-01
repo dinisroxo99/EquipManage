@@ -44,7 +44,7 @@ public class StatusOptController : ControllerBase
             var optionsList = new List<StatusOpt>();
             foreach (var item in options.options)
             {
-                var newOption = new StatusOpt { Name = item.ToString() };
+                var newOption = new StatusOpt { Name = item.ToString(), CreatedAt=DateTime.UtcNow };
                 optionsList.Add(newOption);
                 await _equipManageContext.StatusOpt.AddAsync(newOption);
             }
@@ -53,7 +53,7 @@ public class StatusOptController : ControllerBase
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            return BadRequest(e.InnerException?.Message ?? e.Message);
         }
     }
     [HttpDelete("{id}")]
@@ -62,8 +62,8 @@ public class StatusOptController : ControllerBase
         try
         {
             var option = await _equipManageContext.StatusOpt.FindAsync(id);
-            if (option == null){ return Forbid(); }
-            var optionDependence = await _equipManageContext.Equipment.Where(x => x.StatusId == id).ToListAsync();
+            if (option == null){ return NotFound(); }
+            var optionDependence = await _equipManageContext.Equipment.Where(x => x.IdStatus == id).ToListAsync();
             if (optionDependence.Count() > 0) {
                 return Conflict(new OptionConflictDTO
                 {
@@ -73,7 +73,7 @@ public class StatusOptController : ControllerBase
             }
             if (option.Name == "Deleted" || option.Name == "Avalable")
             {
-                return Forbid();
+                return BadRequest();
             }
             _equipManageContext.StatusOpt.Remove(option);
             await _equipManageContext.SaveChangesAsync();
