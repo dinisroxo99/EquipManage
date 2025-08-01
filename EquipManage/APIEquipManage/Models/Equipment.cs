@@ -15,12 +15,14 @@ namespace APIEquipManage.Models
         public required DateTime CreatedAt { get; set; }
         public required int IdStatus { get; set; }
         public required int IdCategory { get; set; }
+        public DateTime? DeletedAt { get; set; }
 
 
         [ForeignKey("IdStatus")]
         public StatusOpt? StatusOpt { get; set; }
         [ForeignKey("IdCategory")]
         public  Category? Category { get; set; }
+        [ForeignKey("IdEquipment")]
         public List<Image>? Images { get; set; }
 
     }
