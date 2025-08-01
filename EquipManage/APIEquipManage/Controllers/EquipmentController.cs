@@ -93,14 +93,18 @@ public class EquipmentController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-
+    /********************************
+     *                              *
+     *      É preciso de rever isto *
+     *                              *
+     * ******************************/
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEquipment(int id)
     {
         var equipment = await _equipManageContext.Equipment.FindAsync(id);
         if (equipment == null)
         {
-            return NotFound();
+            return Forbid();
         }
         var canceledReservations = new List<Reservation>(); 
         var reservation = await _equipManageContext.Reservation.Where(r => r.IdEquipment == id).ToListAsync();
@@ -120,7 +124,7 @@ public class EquipmentController : ControllerBase
         {
             return BadRequest(new { message = "Can't find the option to Delete" });
         }
-        equipment.Status.Id = deletedStatus.Id;
+        equipment.StatusId = deletedStatus.Id;
         await _equipManageContext.SaveChangesAsync();
         return Ok(canceledReservations);
     }

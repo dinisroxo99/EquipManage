@@ -17,9 +17,8 @@ namespace APIEquipManage.Models
 
 
         
-        
-        public required Status Status { get; set; }
-        public required Category Category { get; set; }
+        public StatusOpt? StatusOpt { get; set; }
+        public  Category? Category { get; set; }
         public List<Image>? Images { get; set; }
 
     }
