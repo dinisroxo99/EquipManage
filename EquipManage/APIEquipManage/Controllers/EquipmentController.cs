@@ -8,7 +8,7 @@ using APIEquipManage.Extensions;
 using APIEquipManage.DTOS;
 
 [ApiController]
-[Route("api/equioment")]
+[Route("api/equipment")]
 public class EquipmentController : ControllerBase
 {
     private readonly EquipManageContext _equipManageContext;
@@ -55,18 +55,47 @@ public class EquipmentController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    [HttpGet("/avaliable")]
-    public async Task<IActionResult> GetEquipmentAvaliable()
+    [HttpGet("avaliable")]
+    public async Task<IActionResult> GetAvaliableEquipment()
     {
         try
         {
-            var equipments = await _equipManageContext.Equipment.IncludeAll()
-                                                                .AsNoTracking()
-                                                                .Where(x => x.StatusOpt.Name == "avaliable")
+            var equipments = await _equipManageContext.Equipment.AsNoTracking()
+                                                                .Where(x => x.IdStatus == 6)
                                                                 .ToListAsync();
 
-            if (equipments.Count == 0) { return NoContent(); }
-            return Ok(equipments);
+            if (equipments.Count < 1) { return NoContent(); }
+            List<GetEquipmentDTO> response = new List<GetEquipmentDTO>();
+            foreach (var equip in equipments)
+            {
+                var equipDTO = new GetEquipmentDTO() { Code = equip.Id, Name = equip.Name, Model = equip.Model };
+                response.Add(equipDTO);
+            }
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+
+            return BadRequest(e.Message);
+        }
+    }
+    [HttpGet("deleted")]
+    public async Task<IActionResult> GetDeletedEquipment()
+    {
+        try
+        {
+            var equipments = await _equipManageContext.Equipment.AsNoTracking()
+                                                                .Where(x => x.IdStatus == 5)
+                                                                .ToListAsync();
+
+            if (equipments.Count < 1) { return NoContent(); }
+            List<GetEquipmentDTO> response = new List<GetEquipmentDTO>();
+            foreach (var equip in equipments)
+            {
+                var equipDTO = new GetEquipmentDTO() { Code = equip.Id, Name = equip.Name, Model = equip.Model };
+                response.Add(equipDTO);
+            }
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -75,18 +104,21 @@ public class EquipmentController : ControllerBase
         }
     }
     [HttpPost]
-    public async Task<IActionResult> NewEquipment([FromBody] Equipment equipment)
+    public async Task<IActionResult> NewEquipment([FromBody] NewEquipmentDTO equipment)
     {
         try
         {
-            if (string.IsNullOrEmpty(equipment.Name))
-            {
-                equipment.Name = Guid.NewGuid().ToString();
-            }
-            equipment.CreatedAt = DateTime.UtcNow;
-            _equipManageContext.Equipment.Add(equipment);
+            var newEquipment = new Equipment() {
+                Name=equipment.Name, 
+                Model=equipment.Model, 
+                Description=equipment.Description,
+                IdStatus=equipment.StatusId,
+                IdCategory=equipment.CategoryId,
+                CreatedAt=DateTime.UtcNow
+            };
+            _equipManageContext.Equipment.Add(newEquipment);
             await _equipManageContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetEquipment), new { name = equipment.Name }, equipment);
+            return CreatedAtAction(nameof(GetEquipment), new { name = newEquipment.Name }, newEquipment);
         }
         catch (Exception e)
         {
@@ -138,8 +170,8 @@ public class EquipmentController : ControllerBase
             if (equipment == null)
                 return NotFound();
             
-            equipment.IdStatus = updateFields.StatusId;
-            equipment.IdCategory = updateFields.CategoryId;
+            equipment.IdStatus = updateFields.StatusId.Value;
+            equipment.IdCategory = updateFields.CategoryId.Value;
             equipment.Name = updateFields.Name;
             equipment.Model = updateFields.Model;
             equipment.Description = updateFields.Description;
