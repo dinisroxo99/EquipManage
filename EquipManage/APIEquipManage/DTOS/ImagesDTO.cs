@@ -1,7 +1,9 @@
-﻿namespace APIEquipManage.DTOS
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace APIEquipManage.DTOS
 {
-    public class UpdateImagesDTO
+    public class ImageUploadDto
     {
-        public required List<string> ImageUrl { get; set; } = new();
+        public required List<IFormFile> Images { get; set; }
     }
 }

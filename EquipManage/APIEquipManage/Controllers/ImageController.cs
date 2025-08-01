@@ -1,6 +1,7 @@
 ﻿using APIEquipManage.Data;
 using APIEquipManage.DTOS;
 using APIEquipManage.Extensions;
+using APIEquipManage.Handlers;
 using APIEquipManage.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,17 +19,29 @@ public class ImageController : ControllerBase
     }
 
     [HttpPost("image")]
-    public async Task<IActionResult> NewImage([FromRoute] int id, [FromBody] UpdateImagesDTO updateImages)
+    public async Task<IActionResult> NewImage([FromRoute] int id, [FromForm] ImageUploadDto files)
     {
+        
+        if (files.Images.Count < 1)
+        {
+            return BadRequest("No files provided.");
+        }
         try
         {
-            var equipment = await _equipManageContext.Equipment.IncludeImg().FirstAsync(x => x.Id == id);
+            
+            var equipment = await _equipManageContext.Equipment.FindAsync(id);
+            if (equipment == null) { return NotFound(); }
             var addedImg = new List<Image>();
-            foreach (var imgPath in updateImages.ImageUrl)
+            foreach (var image in files.Images)
             {
-                var img = new Image { ImagePath = imgPath , IdEquipment = id};
-                await _equipManageContext.Image.AddAsync(img);
-                addedImg.Add(img);
+                string imagePath = new UploadHandler().UploadImages(image);
+
+                if (imagePath != null) 
+                {
+                    var newImg = new Image() { IdEquipment = equipment.Id, ImagePath = imagePath };
+                    await _equipManageContext.Image.AddAsync(newImg); 
+                    addedImg.Add(newImg);   
+                }
             }
             await _equipManageContext.SaveChangesAsync();
             return Ok(addedImg);
