@@ -1,5 +1,4 @@
 using APIEquipManage.Data;
-using APIEquipManage.Service;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -11,7 +10,6 @@ builder.Services.AddDbContext<EquipManageContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHostedService<ReservationMonitorService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 //builder.Services.AddOpenApi();
 
