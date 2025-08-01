@@ -34,11 +34,11 @@ public class ImageController : ControllerBase
             var addedImg = new List<Image>();
             foreach (var image in files.Images)
             {
-                string imagePath = new UploadHandler().UploadImages(image);
+                string imagePath = new ImageHandler().UploadImages(image);
 
                 if (imagePath != null) 
                 {
-                    var newImg = new Image() { IdEquipment = equipment.Id, ImagePath = imagePath };
+                    var newImg = new Image() { IdEquipment = equipment.Id, Path = imagePath };
                     await _equipManageContext.Image.AddAsync(newImg); 
                     addedImg.Add(newImg);   
                 }
@@ -61,6 +61,7 @@ public class ImageController : ControllerBase
             if (img != null && img.IdEquipment == id)
             {
                 _equipManageContext.Image.Remove(img);
+                var x = new ImageHandler().DeleteImage(img.Path);
                 await _equipManageContext.SaveChangesAsync();
                 return Ok(img);
             }
