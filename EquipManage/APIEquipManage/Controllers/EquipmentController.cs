@@ -23,12 +23,17 @@ public class EquipmentController : ControllerBase
     {
         try
         {
-            var equipments = await _equipManageContext.Equipment.IncludeAll().AsNoTracking().ToListAsync();
+            var equipments = await _equipManageContext.Equipment.Include(e => e.StatusOpt).ToListAsync();
             if (equipments.Count == 0)
             {
                 return NoContent();
             }
-            return Ok(equipments);
+            List<GetEquipmentDTO> response = new List<GetEquipmentDTO>();
+            foreach (var equip in equipments)
+            {
+                response.Add(new GetEquipmentDTO() { Code = equip.Id, Name = equip.Name, Model = equip.Model, Status=equip.StatusOpt.Name });
+            }
+            return Ok(response);
         }
         catch(Exception e)
         {
@@ -38,17 +43,28 @@ public class EquipmentController : ControllerBase
    
         
     }
-    [HttpGet("{name}")]
-    public async Task<IActionResult> GetEquiomentByName(string name)
+    [HttpGet("search")]
+    public async Task<IActionResult> GetEquiomentByName([FromQuery] string name)
     {
         try
         {
-            var equipment = await _equipManageContext.Equipment.IncludeAll().AsNoTracking().FirstOrDefaultAsync(x => x.Name == name);
+            var equipment = await _equipManageContext.Equipment.Include(e => e.StatusOpt).AsNoTracking().Where(x => x.Name.Contains(name)).ToListAsync();
             if (equipment == null)
             {
-                return NotFound();
+                return NoContent();
             }
-            return Ok(equipment);
+            List<GetEquipmentDTO> response = new List<GetEquipmentDTO>();
+            foreach (var equip in equipment) 
+            { 
+                response.Add(new GetEquipmentDTO()
+                {
+                    Code = equip.Id,
+                    Name = equip.Name,
+                    Model = equip.Model,
+                    Status = equip.StatusOpt.Name
+                }); 
+            }
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -125,11 +141,6 @@ public class EquipmentController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    /********************************
-     *                              *
-     *      É preciso de rever isto *
-     *                              *
-     * ******************************/
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEquipment(int id)
     {
@@ -157,8 +168,16 @@ public class EquipmentController : ControllerBase
             return BadRequest(new { message = "Can't find the option to Delete" });
         }
         equipment.IdStatus = deletedStatus.Id;
+        var response = new DeletedEquipmentDTO()
+        {
+            Code = equipment.Id,
+            Name = equipment.Name,
+            Model = equipment.Model,
+            Status = equipment.StatusOpt.Name,
+            CanceledReservation = canceledReservations
+        };
         await _equipManageContext.SaveChangesAsync();
-        return Ok(canceledReservations);
+        return Ok(response);
     }
 
     [HttpPut("{id}")]
@@ -175,7 +194,7 @@ public class EquipmentController : ControllerBase
             equipment.Name = updateFields.Name;
             equipment.Model = updateFields.Model;
             equipment.Description = updateFields.Description;
-
+            
             await _equipManageContext.SaveChangesAsync();
 
             return Ok(equipment);
