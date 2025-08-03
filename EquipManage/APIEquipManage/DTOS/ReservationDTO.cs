@@ -18,4 +18,11 @@ namespace APIEquipManage.DTOS
         public required DateTime End { get; set; }
     }
 
+    public class NewReservationDTO
+    {
+        public required int EquipmentId { get; set; }
+        public required DateTime Start { get; set; }
+        public required DateTime End { get; set; }
+    }
+
 }

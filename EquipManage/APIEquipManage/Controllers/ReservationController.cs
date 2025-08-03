@@ -27,7 +27,14 @@ public class ReservationController : ControllerBase
             {
                 return NoContent();
             }
-            return Ok(reservations);
+            var response = new List<GetReservationDTO>();
+            foreach (var item in reservations)
+            {
+                var equipmentDTO = new GetEquipmentDTO() { Code = item.Equipment.Id, Name = item.Equipment.Name, Model = item.Equipment.Model };
+
+                response.Add(new GetReservationDTO() { Code = item.Id, Equipment = equipmentDTO, Start = item.StartDate, End = item.EndDate });
+            }
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -36,9 +43,5 @@ public class ReservationController : ControllerBase
         }
     }
 
-    private IActionResult BadRequest(string message)
-    {
-        throw new NotImplementedException();
-    }
 }
 
