@@ -207,9 +207,13 @@ public class EquipmentController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    [HttpPost("{id}/reservation")]
-    public async Task<IActionResult> NewReservation([FromRoute] int idEquipment ,[FromBody] NewReservationDTO newReservationDTO)
+    [HttpPost("{idEquipment}/reservation")]
+    public async Task<IActionResult> NewReservation([FromRoute] int idEquipment, [FromBody] NewReservationDTO newReservationDTO)
     {
+        if (newReservationDTO.Start < DateTime.UtcNow)
+        {
+            return BadRequest("data-hora mal");
+        }
         try
         {
             var equipmentDependence = await _equipManageContext.Reservation.Where(x => x.IdEquipment == idEquipment).ToListAsync();
@@ -223,11 +227,11 @@ public class EquipmentController : ControllerBase
             }
 
 
-            var newReservation = new Reservation() { 
+            var newReservation = new Reservation() {
                 IdEquipment = idEquipment,
                 CreatedAt = DateTime.UtcNow,
                 StartDate = newReservationDTO.Start,
-                EndDate = newReservationDTO.End   
+                EndDate = newReservationDTO.End
             };
             _equipManageContext.Reservation.Add(newReservation);
             await _equipManageContext.SaveChangesAsync();
@@ -239,6 +243,5 @@ public class EquipmentController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-
 }
 

@@ -22,7 +22,8 @@ public class ReservationController : ControllerBase
     {
         try
         {
-            var reservations = await _equipManageContext.Reservation.AsNoTracking().ToListAsync();
+            var reservations = await _equipManageContext.Reservation.Include(x=>x.Equipment).AsNoTracking().ToListAsync();
+
             if (reservations.Count < 1)
             {
                 return NoContent();
