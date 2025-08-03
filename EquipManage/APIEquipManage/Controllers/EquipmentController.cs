@@ -188,16 +188,19 @@ public class EquipmentController : ControllerBase
             var equipment = await _equipManageContext.Equipment.FindAsync(id);
             if (equipment == null)
                 return NotFound();
-            
-            equipment.IdStatus = updateFields.StatusId.Value;
-            equipment.IdCategory = updateFields.CategoryId.Value;
+            if (equipment.IdStatus == 6 && updateFields.StatusId !=6)
+            {
+                equipment.DeletedAt = null;
+            }
+            equipment.IdStatus = updateFields.StatusId;
+            equipment.IdCategory = updateFields.CategoryId;
             equipment.Name = updateFields.Name;
             equipment.Model = updateFields.Model;
             equipment.Description = updateFields.Description;
             
             await _equipManageContext.SaveChangesAsync();
 
-            return Ok(equipment);
+            return Ok("Update Successfully");
         }
         catch (Exception e)
         {
