@@ -207,6 +207,38 @@ public class EquipmentController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-          
+    [HttpPost("{id}/reservation")]
+    public async Task<IActionResult> NewReservation([FromRoute] int idEquipment ,[FromBody] NewReservationDTO newReservationDTO)
+    {
+        try
+        {
+            var equipmentDependence = await _equipManageContext.Reservation.Where(x => x.IdEquipment == idEquipment).ToListAsync();
+
+            foreach (var existing in equipmentDependence)
+            {
+                bool isOverlapping =
+                newReservationDTO.Start < existing.EndDate &&
+                newReservationDTO.End > existing.StartDate;
+                if (isOverlapping) { return BadRequest("There is already a reservation in that time slot."); }
+            }
+
+
+            var newReservation = new Reservation() { 
+                IdEquipment = idEquipment,
+                CreatedAt = DateTime.UtcNow,
+                StartDate = newReservationDTO.Start,
+                EndDate = newReservationDTO.End   
+            };
+            _equipManageContext.Reservation.Add(newReservation);
+            await _equipManageContext.SaveChangesAsync();
+
+            return Ok("Created Successfully");
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
 }
 
