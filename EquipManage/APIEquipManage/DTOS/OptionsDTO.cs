@@ -4,11 +4,13 @@ namespace APIEquipManage.DTOS
 {
     public class OptionsDTO
     {
-        public required List<string> options { get; set; } = new List<string>();
+        public int? Code { get; set; }
+        public required string Name { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
     public class OptionConflictDTO
     {
-        public string Message { get; set; } = "";
-        public List<Equipment> Equipamentos { get; set; } = new List<Equipment>();
+        public string? Message { get; set; } = "";
+        public required Equipment Equipment { get; set; }
     }
 }
