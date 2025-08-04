@@ -26,12 +26,23 @@ public class CategoryController : ControllerBase
     {
         try
         {
-            var category = await _equipManageContext.Category.AsNoTracking().ToListAsync();
-            if (category.Count() < 1)
+            var categories = await _equipManageContext.Category.AsNoTracking().ToListAsync();
+            if (categories.Count() < 1)
             {
                 return NoContent();
             }
-            return Ok(category);
+            var response = new List<CategoryDTO>();
+            foreach (var category in categories)
+            {
+                response.Add(new CategoryDTO() 
+                { 
+                    Code = category.Id, 
+                    SubCode = category.IdParent, 
+                    Name = category.Name 
+                });
+            }
+
+            return Ok(response);
 
         }
         catch (Exception e)
@@ -42,23 +53,21 @@ public class CategoryController : ControllerBase
     }
 
     [HttpPost("{id}")]
-    public async Task<IActionResult> NewSubCategory([FromRoute]int id, [FromBody] SubCategoryDTO subCategory)
+    public async Task<IActionResult> NewSubCategory([FromRoute]int id, [FromBody] List<CategoryDTO> listSubCategories)
     {
         try
         {
             var category = await _equipManageContext.Category.FindAsync(id);
             if (category == null) { return NotFound(); }
-            if (subCategory.SubCategory.Count < 1){ return NoContent(); }
-            var ListSubCategorys = new List<Category>();
-            foreach (var item in subCategory.SubCategory)
-            {
-                var newSubCategory = new Category { IdParent = id, Name = item.ToString() };
-                await _equipManageContext.AddAsync(newSubCategory);
-                ListSubCategorys.Add(newSubCategory);
-                
-            }
+
+            if (listSubCategories.Count < 1){ return BadRequest("No items found!"); }
+            var newSubCategories = listSubCategories.Select(sub => new Category() { Name = sub.Name, IdParent = id }).ToList();
+
+            await _equipManageContext.Category.AddRangeAsync(newSubCategories);
             await _equipManageContext.SaveChangesAsync();
-            return Ok(ListSubCategorys);
+
+            var response = newSubCategories.Select(sub => new CategoryDTO() { Name = sub.Name }).ToList();
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -67,23 +76,21 @@ public class CategoryController : ControllerBase
         }
     }
     [HttpPost]
-    public async Task<IActionResult> NewCategory([FromBody] CategoryDTO category)
+    public async Task<IActionResult> NewCategory([FromBody] List<CategoryDTO> categories)
     {
-        if (category.Category.Count < 1)
+        if (categories.Count < 1)
         {
-            return NoContent();
+            return BadRequest("No items found!");
         }
         try
         {
-            var ListCategorys = new List<Category>();
-            foreach (var name in category.Category)
-            {
-                var newCategory = new Category { Name = name , IdParent = null};
-                ListCategorys.Add(newCategory);
-                await _equipManageContext.Category.AddAsync(newCategory);
-            }
+            var newCategories = categories.Select(cat => new Category() { Name = cat.Name });
+
+            await _equipManageContext.Category.AddRangeAsync(newCategories);
             await _equipManageContext.SaveChangesAsync();
-            return Ok(ListCategorys);
+
+            var response = newCategories.Select(cat => new CategoryDTO() { Name = cat.Name}).ToList();
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -99,7 +106,7 @@ public class CategoryController : ControllerBase
         try
         {
             var category = await _equipManageContext.Category.FindAsync(id);
-            if (category == null) { return Forbid(); }
+            if (category == null) { return BadRequest("Cannot delete category because there are associated equipment or subcategories."); }
             var equipmentdependence = await _equipManageContext.Equipment.Where(x => x.IdCategory == id).ToListAsync();
             var categorydependence = await _equipManageContext.Category.Where(x => x.IdParent == category.Id).ToListAsync();
             if (equipmentdependence.Count > 0 || categorydependence.Count > 0)
@@ -113,7 +120,7 @@ public class CategoryController : ControllerBase
             }
             _equipManageContext.Category.Remove(category);
             await _equipManageContext.SaveChangesAsync();
-            return Ok(category);
+            return Ok(new CategoryDTO() { Name = category.Name});
 
         }
         catch (Exception e)

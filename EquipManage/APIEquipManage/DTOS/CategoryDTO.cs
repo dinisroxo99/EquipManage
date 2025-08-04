@@ -2,14 +2,11 @@
 
 namespace APIEquipManage.DTOS
 {
-    public class SubCategoryDTO
-    {
-        public required List<string> SubCategory {  get; set; } = new List<string>();
-    }
-
     public class CategoryDTO
     {
-        public required List<string> Category { get; set; } = new List<string>();
+        public int? Code { get; set; }
+        public int? SubCode { get; set; }
+        public required string Name { get; set; }
     }
     public class CategoryConflictDTO
     {
