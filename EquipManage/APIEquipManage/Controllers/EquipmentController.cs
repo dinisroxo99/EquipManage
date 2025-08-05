@@ -34,7 +34,13 @@ namespace APIEquipManage.Controllers
                     return NoContent();
                 }
 
-                var equipmentsDTO = pagedEquipments.Items.Select(equip => new EquipmentDTO() { Code = equip.Id, Name = equip.Name, Model = equip.Model, Status = equip.StatusOpt?.Name }).ToList();
+                var equipmentsDTO = pagedEquipments.Items.Select(equip => new EquipmentDTO() {
+                    Code = equip.Id, 
+                    Name = equip.Name, 
+                    Model = equip.Model, 
+                    Status = equip.StatusOpt?.Name 
+                }).ToList();
+
                 var response = new
                 {
                     pagedEquipments.HasPreviousPage,
