@@ -20,14 +20,17 @@ namespace APIEquipManage.Controllers
         private readonly EquipManageContext _equipManageContext = equipManageContext;
 
         [HttpGet]
-        public async Task<IActionResult> GetEquipment([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetEquipment(
+            [FromQuery] int page = 1, 
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortField = "name",
+            [FromQuery] string sortOrder = "asc")
         {
             if (page < 1 || pageSize <1 || pageSize > 100){ return BadRequest("Page must be ≥ 1 and pageSize must be between 1 and 100."); }
             try
             {
                 
-                var equipments = _equipManageContext.Equipment.Include(e => e.StatusOpt).AsNoTracking();
-
+                var equipments = _equipManageContext.Equipment.Include(e => e.StatusOpt).AsNoTracking().OrderByDynamic(sortField, sortOrder);
                 var pagedEquipments = await PaginatedList<Equipment>.CreateAsync(equipments, page, pageSize);
                 if (pagedEquipments.Items.Count < 1)
                 {
@@ -57,13 +60,18 @@ namespace APIEquipManage.Controllers
             }
         }
         [HttpGet("search")]
-        public async Task<IActionResult> GetEquiomentByName([FromQuery] string name, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetEquiomentByName(
+            [FromQuery] string name,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortField = "Name",
+            [FromQuery] string sortOrder = "asc")
         {
             if (page < 1 || pageSize < 1 || pageSize > 100) { return BadRequest("Page must be ≥ 1 and pageSize must be between 1 and 100."); }
             try
             {
 
-                var equipments = _equipManageContext.Equipment.Include(e => e.StatusOpt).AsNoTracking().Where(x => x.Name.Contains(name));
+                var equipments = _equipManageContext.Equipment.Include(e => e.StatusOpt).AsNoTracking().Where(x => x.Name.Contains(name)).OrderByDynamic(sortField, sortOrder); ;
                 var pagedEquipments = await PaginatedList<Equipment>.CreateAsync(equipments, page, pageSize);
                 if (pagedEquipments.Items.Count < 1)
                 {
@@ -87,11 +95,16 @@ namespace APIEquipManage.Controllers
             }
         }
         [HttpGet("avaliable")]
-        public async Task<IActionResult> GetAvaliableEquipment([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAvaliableEquipment(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortField = "Name",
+            [FromQuery] string sortOrder = "asc")
         {
+            if (page < 1 || pageSize < 1 || pageSize > 100) { return BadRequest("Page must be ≥ 1 and pageSize must be between 1 and 100."); }
             try
             {
-                var equipments = _equipManageContext.Equipment.AsNoTracking().Where(x => x.IdStatus == 6);
+                var equipments = _equipManageContext.Equipment.AsNoTracking().Where(x => x.IdStatus == 6).OrderByDynamic(sortField, sortOrder); ;
 
                 var pagedEquipments = await PaginatedList<Equipment>.CreateAsync(equipments, page, pageSize);
                 if (pagedEquipments.Items.Count < 1)
@@ -117,12 +130,16 @@ namespace APIEquipManage.Controllers
             }
         }
         [HttpGet("deleted")]
-        public async Task<IActionResult> GetDeletedEquipment([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetDeletedEquipment(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortField = "name",
+            [FromQuery] string sortOrder = "asc")
         {
+            if (page < 1 || pageSize < 1 || pageSize > 100) { return BadRequest("Page must be ≥ 1 and pageSize must be between 1 and 100."); }
             try
             {
-                var equipments = _equipManageContext.Equipment.AsNoTracking()
-                                                                    .Where(x => x.IdStatus == 5);
+                var equipments = _equipManageContext.Equipment.AsNoTracking().Where(x => x.IdStatus == 5).OrderByDynamic(sortField, sortOrder); ;
 
                 var pagedEquipments = await PaginatedList<Equipment>.CreateAsync(equipments, page, pageSize);
                 if (pagedEquipments.Items.Count < 1)
