@@ -2,17 +2,18 @@
 
 namespace APIEquipManage.DTOS
 {
-    public class GetReservationDTO
+    public class ReservationDTO
     {
         public required int Code { get; set; }
-        public required GetEquipmentDTO Equipment { get; set; }
+        public required EquipmentDTO Equipment { get; set; }
         public required DateTime Start { get; set; }
         public required DateTime End { get; set; }
+        public DateTime? CanceledAt { get; set; } 
     }
 
-    public class GetDetailedReservationDTO
+    public class DetailedReservationDTO
     {
-        public required GetDetailedEquipmentDTO Equipment { get; set; }
+        public required DetailedEquipmentDTO Equipment { get; set; }
         public required DateTime CreatedAt { get; set; }
         public required DateTime Start { get; set; }
         public required DateTime End { get; set; }
@@ -24,5 +25,4 @@ namespace APIEquipManage.DTOS
         public required DateTime Start { get; set; }
         public required DateTime End { get; set; }
     }
-
 }
