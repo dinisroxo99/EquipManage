@@ -207,5 +207,36 @@ namespace APIEquipManage.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpDelete("id")]
+        public async Task<IActionResult> CancelReservation([FromRoute] int id)
+        {
+            try
+            {
+                var reservation = await _equipManageContext.Reservation.Include(x=>x.Equipment).FirstOrDefaultAsync(r => r.Id == id);
+                if (reservation == null)
+                {
+                    return NotFound();
+                }
+                if (reservation.CanceledAt != null)
+                {
+                    return BadRequest("The reservation was alredy canceled");
+                }
+                if (reservation.EndDate < DateTime.UtcNow )
+                {
+                    return BadRequest("It's not possible to cancel the reservation because it is already finished.");
+                }
+                reservation.CanceledAt = DateTime.UtcNow;
+                await _equipManageContext.SaveChangesAsync();
+                return Ok($"The reservation with id \"{reservation.Id}\" for the equipment \"{reservation.Equipment.Name}\" whas canceled succefully");
+
+
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+        }
     }
 }
