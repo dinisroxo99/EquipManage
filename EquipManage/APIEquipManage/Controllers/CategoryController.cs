@@ -30,7 +30,7 @@ namespace APIEquipManage.Controllers
                 {
                     return NoContent();
                 }
-                var categoriesDTO = pagedCategories.Items.Select(cat => new CategoryDTO() { Name = cat.Name });
+                var categoriesDTO = pagedCategories.Items.Select(cat => new CategoryDTO() { Code = cat.Id, SubCode = cat.IdParent, Name = cat.Name });
 
                 var response = new
                 {
