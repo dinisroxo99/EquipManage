@@ -15,12 +15,13 @@ namespace APIEquipManage.Controllers
         private readonly EquipManageContext _equipManageContext = equipManageContext;
 
         [HttpGet]
-        public async Task<IActionResult> GetReservations([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetReservations([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string sort = "desc")
         {
             if (page < 1 || pageSize < 1 || pageSize > 100) { return BadRequest("Page must be ≥ 1 and pageSize must be between 1 and 100."); }
             try
             {
                 var reservations = _equipManageContext.Reservation.Include(x => x.Equipment).AsNoTracking();
+                reservations = sort.Equals("asc", StringComparison.CurrentCultureIgnoreCase) ? reservations.OrderBy(r => r.StartDate) : reservations.OrderByDescending(r => r.StartDate);
                 var pagedReservations = await PaginatedList<Reservation>.CreateAsync(reservations, page, pageSize);
 
                 if (pagedReservations.Items.Count < 1)
@@ -60,7 +61,8 @@ namespace APIEquipManage.Controllers
             [FromQuery] DateTime startDate, 
             [FromQuery] DateTime endDate, 
             [FromQuery] int page = 1, 
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sort = "desc")
         {
             if (startDate > endDate) { return BadRequest("The date range cannot exceed one month."); }
             if ((endDate - startDate).TotalDays > 31) { return BadRequest("The reservation period cannot exceed one month."); }
@@ -69,6 +71,7 @@ namespace APIEquipManage.Controllers
             try
             {
                 var reservations = _equipManageContext.Reservation.Where(x => x.StartDate >= startDate && x.EndDate <= endDate).Include(x => x.Equipment).AsNoTracking();
+                reservations = sort.Equals("asc", StringComparison.CurrentCultureIgnoreCase) ? reservations.OrderBy(r => r.StartDate) : reservations.OrderByDescending(r => r.StartDate);
                 var pagedReservations = await PaginatedList<Reservation>.CreateAsync(reservations, page, pageSize);
                 if (pagedReservations.Items.Count < 1)
                 {

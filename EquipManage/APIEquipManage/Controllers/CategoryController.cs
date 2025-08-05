@@ -19,12 +19,14 @@ namespace APIEquipManage.Controllers
         private readonly EquipManageContext _equipManageContext = equipManageContext;
 
         [HttpGet]
-        public async Task<IActionResult> GetCategorys([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetCategorys([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string sort = "desc")
         {
             if (page < 1 || pageSize < 1 || pageSize > 100) { return BadRequest("Page must be ≥ 1 and pageSize must be between 1 and 100."); }
             try
             {
                 var categories = _equipManageContext.Category.AsNoTracking();
+                categories = sort.Equals("asc", StringComparison.CurrentCultureIgnoreCase) ? categories.OrderBy(r => r.Name) : categories.OrderByDescending(r => r.Name);
+
                 var pagedCategories = await PaginatedList<Category>.CreateAsync(categories, page, pageSize);
                 if (pagedCategories.Items.Count < 1)
                 {
