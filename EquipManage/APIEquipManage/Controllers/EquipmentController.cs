@@ -237,42 +237,5 @@ namespace APIEquipManage.Controllers
                 return BadRequest(e.Message);
             }
         }
-        [HttpPost("{idEquipment}/reservation")]
-        public async Task<IActionResult> NewReservation([FromRoute] int idEquipment, [FromBody] NewReservationDTO newReservationDTO)
-        {
-            if (newReservationDTO.Start < DateTime.UtcNow){ return BadRequest("The reservation start date and time cannot be in the past."); }
-            if (newReservationDTO.End < newReservationDTO.Start) { return BadRequest("The reservation end date must be after the start date."); }
-            try
-            {
-                var equipmentDependence = await _equipManageContext.Reservation.Where(x => x.IdEquipment == idEquipment).ToListAsync();
-
-                bool hasOverLap = equipmentDependence.Any(existing =>
-                    newReservationDTO.Start < existing.EndDate &&
-                    newReservationDTO.End > existing.StartDate);
-
-                if (hasOverLap)
-                {
-                    return BadRequest("There is already a reservation in that time slot.");
-                }
-
-
-                var newReservation = new Reservation()
-                {
-                    IdEquipment = idEquipment,
-                    CreatedAt = DateTime.UtcNow,
-                    StartDate = newReservationDTO.Start,
-                    EndDate = newReservationDTO.End
-                };
-                _equipManageContext.Reservation.Add(newReservation);
-                await _equipManageContext.SaveChangesAsync();
-
-                //return Ok("Created Successfully");
-                return CreatedAtRoute("GetReservationById", new { id = newReservation.Id }, newReservation);
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
     }
 }

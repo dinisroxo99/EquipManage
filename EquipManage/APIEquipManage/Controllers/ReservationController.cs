@@ -107,7 +107,7 @@ namespace APIEquipManage.Controllers
             }
         }
 
-        [HttpGet("/{id}", Name = "GetReservationById")]
+        [HttpGet("{id}", Name = "GetReservationById")]
         public async Task<IActionResult> GetReservationById([FromRoute] int Id)
         {
             try
@@ -122,6 +122,82 @@ namespace APIEquipManage.Controllers
                     CanceledAt = reservation.CreatedAt
                 };
                 return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPut("Id")]
+        public async Task<IActionResult> UpdateReservation([FromRoute] int Id, [FromBody] UpdateReservationDTO reservationDTO)
+        {
+            if (reservationDTO == null) { return BadRequest("No content found to update"); }
+            if (reservationDTO.Start > reservationDTO.End || reservationDTO.Start < DateTime.UtcNow) { return BadRequest("message"); }
+            
+            try
+            {
+                var reservation = await _equipManageContext.Reservation.FindAsync(Id);
+                if (reservation == null)
+                {
+                    return NotFound();
+                }
+                var reservationsDependences = await _equipManageContext.Reservation.Where(x => x.IdEquipment == reservationDTO.IdEquipment).ToListAsync();
+                bool hasOverLap = reservationsDependences.Any(existing =>
+                    reservationDTO.Start < existing.EndDate &&
+                    reservationDTO.End > existing.StartDate);
+
+                if (hasOverLap)
+                {
+                    return BadRequest("There is already a reservation in that time slot.");
+                }
+                reservation.StartDate = reservationDTO.Start;
+                reservation.EndDate = reservationDTO.End;
+
+                await _equipManageContext.SaveChangesAsync();
+
+                return Ok($"Update sucessefully reservation strats at: {reservation.StartDate.Date}; and ends at: {reservation.EndDate.Date}");
+                
+
+
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+        }
+        [HttpPost()]
+        public async Task<IActionResult> NewReservation([FromBody] NewReservationDTO newReservationDTO)
+        {
+            if (newReservationDTO.Start < DateTime.UtcNow) { return BadRequest("The reservation start date and time cannot be in the past."); }
+            if (newReservationDTO.End < newReservationDTO.Start) { return BadRequest("The reservation end date must be after the start date."); }
+            try
+            {
+                var equipmentDependence = await _equipManageContext.Reservation.Where(x => x.IdEquipment == newReservationDTO.IdEquipment).ToListAsync();
+
+                bool hasOverLap = equipmentDependence.Any(existing =>
+                    newReservationDTO.Start < existing.EndDate &&
+                    newReservationDTO.End > existing.StartDate);
+
+                if (hasOverLap)
+                {
+                    return BadRequest("There is already a reservation in that time slot.");
+                }
+
+
+                var newReservation = new Reservation()
+                {
+                    IdEquipment = newReservationDTO.IdEquipment,
+                    CreatedAt = DateTime.UtcNow,
+                    StartDate = newReservationDTO.Start,
+                    EndDate = newReservationDTO.End
+                };
+                _equipManageContext.Reservation.Add(newReservation);
+                await _equipManageContext.SaveChangesAsync();
+
+                //return Ok("Created Successfully");
+                return CreatedAtRoute("GetReservationById", new { id = newReservation.Id }, newReservation);
             }
             catch (Exception e)
             {
