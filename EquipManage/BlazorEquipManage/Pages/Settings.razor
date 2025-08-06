@@ -73,7 +73,15 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        options = await Http.GetFromJsonAsync<List<Option>>("");
+        try
+        {
+            options = await Http.GetFromJsonAsync<List<Option>>("https://localhost:7066/api/status/options");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erro ao obter opções: " + ex.Message);
+            // Podes também mostrar uma mensagem na UI
+        }
     }
 
     void OpenEditModal(Option option)
