@@ -1,0 +1,63 @@
+﻿<div class="modal-background" style="@(IsVisible ? "display:block;" : "display:none;")">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5>@Title</h5>
+            <button class="close-btn" @onclick="Close">×</button>
+        </div>
+        <div class="modal-body">
+            @ChildContent
+        </div>
+        <div class="modal-footer">
+            @if (ShowCreateButton)
+            {
+                <button class="btn btn-primary" @onclick="OnCreateClicked">Create</button>
+            }
+            @if (ShowSaveButton)
+            {
+                <button class="btn btn-success" @onclick="OnSaveClicked">Save Changes</button>
+            }
+            @if (ShowDeleteButton)
+            {
+                <button class="btn btn-danger" @onclick="OnDeleteClicked">Delete</button>
+            }
+            <button class="btn btn-secondary" @onclick="Close">Cancel</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    [Parameter] public string Title { get; set; } = "Modal";
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public bool ShowCreateButton { get; set; }
+    [Parameter] public bool ShowSaveButton { get; set; }
+    [Parameter] public bool ShowDeleteButton { get; set; }
+
+    [Parameter] public EventCallback OnCreate { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+
+    private async Task Close()
+    {
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task OnCreateClicked()
+    {
+        await OnCreate.InvokeAsync();
+    }
+
+    private async Task OnSaveClicked()
+    {
+        await OnSave.InvokeAsync();
+    }
+
+    private async Task OnDeleteClicked()
+    {
+        await OnDelete.InvokeAsync();
+    }
+}
