@@ -1,0 +1,153 @@
+﻿@using BlazorEquipManage.Models
+@using BlazorEquipManage.Components
+@page "/settings"
+@inject HttpClient Http
+
+<PageTitle>Settings</PageTitle>
+
+<h1>Options</h1>
+
+@if (options == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>CreatedAT</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var option in options)
+            {
+                <tr>
+                    <td>@option.Code</td>
+                    <td>@option.Name</td>
+                    <td>@option.CreatedAt</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary m-2" @onclick="() => OpenEditModal(option)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OpenDeleteModal(option)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<ModalDialog IsVisible="@isModalVisible" IsVisibleChanged="OnModalVisibilityChanged"
+             Title="@modalTitle"
+             ShowCreateButton="@showCreateBtn"
+             ShowSaveButton="@showSaveBtn"
+             ShowDeleteButton="@showDeleteBtn"
+             OnSave="SaveOption"
+             OnDelete="DeleteOptionConfirmed">
+
+    <div>
+        <label>Code:</label>
+        <input type="number" class="form-control" @bind="editingOption.Code" />
+    </div>
+    <div>
+        <label>Name:</label>
+        <input type="text" class="form-control" @bind="editingOption.Name" />
+    </div>
+</ModalDialog>
+
+@code {
+    private List<Option>? options;
+    private bool isModalVisible = false;
+    private string modalTitle = "";
+    private bool showCreateBtn = false;
+    private bool showSaveBtn = false;
+    private bool showDeleteBtn = false;
+
+    private Option editingOption = new Option();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        options = await Http.GetFromJsonAsync<List<Option>>("");
+    }
+
+    void OpenEditModal(Option option)
+    {
+        editingOption = new Option
+        {
+            Code = option.Code,
+            Name = option.Name,
+            CreatedAt = option.CreatedAt
+        };
+        modalTitle = "Edit Option";
+        showCreateBtn = false;
+        showSaveBtn = true;
+        showDeleteBtn = false;
+        isModalVisible = true;
+    }
+
+    void OpenDeleteModal(Option option)
+    {
+        editingOption = option;
+        modalTitle = "Delete Option?";
+        showCreateBtn = false;
+        showSaveBtn = false;
+        showDeleteBtn = true;
+        isModalVisible = true;
+    }
+
+    async Task SaveOption()
+    {
+        // Chamada API para atualizar
+        var response = await Http.PutAsJsonAsync($"api/options/{editingOption.Code}", editingOption);
+        if (response.IsSuccessStatusCode)
+        {
+            await RefreshOptions();
+            isModalVisible = false;
+        }
+        else
+        {
+            // tratar erro
+        }
+    }
+
+    async Task DeleteOptionConfirmed()
+    {
+        // Chamada API para apagar
+        var response = await Http.DeleteAsync($"api/options/{editingOption.Code}");
+        if (response.IsSuccessStatusCode)
+        {
+            await RefreshOptions();
+            isModalVisible = false;
+        }
+        else
+        {
+            // tratar erro
+        }
+    }
+    
+    async Task RefreshOptions()
+    {
+        options = await Http.GetFromJsonAsync<List<Option>>("api/options");
+        StateHasChanged();
+    }
+
+    async Task OnModalVisibilityChanged(bool visible)
+    {
+        isModalVisible = visible;
+        if (!visible)
+        {
+            // Limpar o editingOption quando modal fecha
+            editingOption = new Option();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+}
+
